@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "mpd-public"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "mpd"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+numpy = "1.22"
+experiment-launcher = {path = "../experiment_launcher"}
+einops = "^0.7.0"
+torch-robotics = {path = "../torch_robotics", develop = true}
+tqdm = "^4.66.1"
+gdown = "^4.7.1"
+moviepy = "^1.0.3"
+opencv-python = "^4.8.1.78"
+mp-baselines = {path = "../mp_baselines"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
