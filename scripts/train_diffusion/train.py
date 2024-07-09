@@ -1,5 +1,6 @@
 import os
 import torch
+import mlflow
 
 from experiment_launcher import single_experiment_yaml, run_experiment
 from mpd import trainer
@@ -116,6 +117,21 @@ def experiment(
         summary_class=summary_class,
     )
 
+    # Save training params
+    training_params = {
+        # env
+        "env": dataset.env.name,
+        # robot
+        "robot": dataset.robot.name,
+        # dataset
+        "dataset_class": dataset.__class__.__name__,
+        "include_velocity": include_velocity,
+    }
+
+    # Tracking training parameters
+    mlflow.log_params(training_params)
+    mlflow.log_param("dataset_subdir", dataset_subdir)
+
     # Train
     trainer.train(
         model=model,
@@ -138,7 +154,29 @@ def experiment(
         tensor_args=tensor_args
     )
 
+    # Tracking the trained model
+    mlflow.pytorch.log_model(model, "model")
+
 
 if __name__ == '__main__':
+    PROJECT_ROOT = "/home/tassos/phd/qureshi/first-project/wip_trajectory_generator"
+    TRACKING_DIR = os.path.join(PROJECT_ROOT, "tracking")
+
+    mlflow.set_tracking_uri(f"file://{TRACKING_DIR}")
+    mlflow.set_experiment("mpd_training")
+    run = mlflow.start_run()
+
+    args = {
+        "dataset_subdir": "env_id___EnvSquare2D/robot_id___RobotPointMass/planner_id___ompl_rrt_and_mp_baselines_chomp",
+        "summary_class": None,
+        "steps_til_summary": 1000,
+        "results_dir": f"results",
+        "seed": 0,
+        "num_train_steps": 50000,
+        "steps_til_ckpt": 10000
+    }
+
     # Leave unchanged
-    run_experiment(experiment)
+    run_experiment(experiment, args=args)
+
+    mlflow.end_run()
